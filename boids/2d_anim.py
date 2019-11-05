@@ -13,7 +13,8 @@ fig = plt.figure()
 ax = fig.add_subplot(111, autoscale_on=False, xlim=(-400, 400), ylim=(-200, 200))
 ax.grid()
 
-scat = ax.scatter(data[0][0][:,0], data[0][0][:,0])
+scat = ax.scatter(data[0][0][:,0], data[0][0][:,0],
+                 s=0.5)
 
 def animate(i):
     pos, vel = data[i]

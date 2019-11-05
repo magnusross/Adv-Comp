@@ -3,51 +3,56 @@ import numba
 from numba import prange
 
 @numba.njit()
-def rule_com(i, pos_all, vel_all, factor=0.1):
-
-    size = len(pos_all)
-    pos_all = pos_all.astype(np.float32)
-    vel_all = pos_all.astype(np.float32)
-    p = np.array([0., 0.], dtype=np.float32)
-
-    for j in prange(size):
-        if j != i:
-            p[0] += pos_all[j][0]
-            p[1] += pos_all[j][1]
-    
-    return -((pos_all[i] - p)/(size-1)) * factor
+def get_co(x_all):
+    N = len(x_all)
+    co = np.zeros_like(x_all[0])
+    for i in range(N):
+        co += x_all[i]
+    return co/N
 
 @numba.njit()
-def rule_avoid(i, pos_all, vel_all, radius=20, factor=2):
+def rule_com(i, pos_all, com, factor=0.0003):
+    return (com - pos_all[i]) * factor
+
+@numba.njit()
+def rule_avoid(i, pos_all, radius=20, factor=0.001):
     
     size = len(pos_all)
     pos_all = pos_all.astype(np.float64)
-    vel_all = pos_all.astype(np.float64)
-    p = np.array([0., 0.], dtype=np.float64)
+    p = np.ones_like(pos_all[0])
 
     #for dealing with objects like walls the boids must avoid
  
     rel_pos = pos_all - pos_all[i]
 
     for j in prange(size):
-        if i != j and  rel_pos[j][0]**2 + rel_pos[j][1]**2 < radius:
-            p[0] -= rel_pos[j][0]
-            p[1] -= rel_pos[j][1]
+        dist = np.power(rel_pos[j], 2)  
+        if i != j and np.sqrt(np.sum(dist))< radius:  
+            for k in range(len(p)):
+                p[k] -= rel_pos[j][k]
+              
     return p * factor 
 
 @numba.njit()
-def rule_match(i, pos_all, vel_all, factor=0.001):
+def rule_match(i, vel_all, cov, factor=0.001):    
+    return (vel_all[i] - cov) * factor
 
-    size = len(pos_all)
-    pos_all = pos_all.astype(np.float32)
-    vel_all = pos_all.astype(np.float32)
-    p = np.array([0., 0.], dtype=np.float32)
-
-    for j in prange(size):
-        if i != j:
-            p[0] -= vel_all[j][0]
-            p[1] -= vel_all[j][1]
+@numba.njit()
+def update_boids(pos_all, vel_all):
     
-    return (p/(size-1) - vel_all[i]) * factor
+    com = get_co(pos_all)
+    cov = get_co(vel_all)
+
+    for i in prange(len(pos_all)):
+
+        v = rule_com(i, pos_all, com)
+        v += rule_avoid(i, pos_all)
+        v += rule_match(i, vel_all, cov)
+
+        vel_all[i] += v 
+        pos_all[i] += vel_all[i]
+
+        
+    return pos_all, vel_all  
     
 

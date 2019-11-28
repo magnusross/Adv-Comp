@@ -1,25 +1,22 @@
 import numpy as np 
-import numba_boids_rules as b
+import updates 
 import tqdm
-from utilities import make_2D_square_walls
+from utilities import make_2D_square_walls, initialise_boids
+np.random.seed(200)
 
 
 
 #initalise boids
-N_b = 300
-pos_rand  = (2*np.random.rand(N_b, 2) - 1) * 100 + np.array([300, 300])
-vel_rand  = (2*np.random.rand(N_b, 2) - 1) 
-
-walls = make_2D_square_walls(400, factor=3)
-
-
+N_b = 200
+dim = 2
+pos_all, vel_all = initialise_boids(N_b, dim)
+print(pos_all.shape)
 #update N times 
-N = 700
-results = np.zeros((N, 2, N_b, 2))                                                 
+N = 10
+results = np.zeros((N, 2, N_b, dim))                                           
 for j in tqdm.tqdm(range(N)):
-    results[j] = b.update_boids(pos_rand, vel_rand, 
-                                objs=1, pos_obj=walls)
-np.save('results.npy', results)
+    results[j] = updates.update_boids(pos_all, vel_all)
+np.save('results_serial.npy', results)
 
 
 

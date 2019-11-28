@@ -11,7 +11,7 @@ def get_co(x_all):
     return co/N
 
 @numba.njit()
-def rule_avoid(i, pos_all, radius=10, factor=0.001):
+def rule_avoid(i, pos_all, radius=50, factor=0.99):
     
     size = len(pos_all)
     pos_all = pos_all.astype(np.float64)
@@ -29,7 +29,7 @@ def rule_avoid(i, pos_all, radius=10, factor=0.001):
 
 
 @numba.njit()
-def rule_com(i, pos_all, radius=100, factor=0.001):
+def rule_com(i, pos_all, radius=50, factor=1):
     
     size = len(pos_all)
     pos_all = pos_all.astype(np.float64)
@@ -49,7 +49,7 @@ def rule_com(i, pos_all, radius=100, factor=0.001):
         return ((p/N) - pos_all[i]) * factor 
 
 @numba.njit()
-def rule_match(i, pos_all, vel_all, radius=10, factor=0.05):
+def rule_match(i, pos_all, vel_all, radius=50, factor=1.01):
     
     size = len(vel_all)
     vel_all = vel_all.astype(np.float64)
@@ -69,43 +69,31 @@ def rule_match(i, pos_all, vel_all, radius=10, factor=0.05):
         return (-vel_all[i] + p/N ) * factor
 
 @numba.njit()
-def rule_wall_avoid(i, pos_all, pos_obj, radius=100, factor=10):
-    
+def rule_wall_avoid(i, pos_all, pos_obj, radius=30, factor=100):
+    '''
+    Not working properly 
+    '''
     size = len(pos_all)
     pos_all = pos_all.astype(np.float64)
     p = np.zeros_like(pos_all[0])
     
     rel_pos = pos_obj - pos_all[i]
-
     for j in prange(size):
-        dist = np.power(rel_pos[j], 2)  
+        dist = np.power(rel_pos[j], 2) 
         if i != j and np.sqrt(np.sum(dist)) < radius:  
             for k in range(len(p)):
-                p[k] -= abs(rel_pos[j][k])
-    
-    return p * factor                
-
+                p[k] -= 1/rel_pos[j][k]**100
+                print(p[k])
+    return p * factor
 
 @numba.njit()
-def update_boids(pos_all, vel_all,
-                 objs=0, pos_obj=np.empty((1,1))):
-    '''
-    objs option for numba compile 
-    '''
-    if objs == 1:
-        assert pos_all.shape[1] == pos_obj.shape[1]
-    
-    for i in prange(len(pos_all)):
-        v = rule_com(i, pos_all)
-        v += rule_avoid(i, pos_all)
-        v += rule_match(i, pos_all, vel_all)
-        if objs:
-            v += rule_wall_avoid(i, pos_all, pos_obj)
+def rule_wall_bounce_2D(i, pos_all, vel_all, width=800., hieght=800.):
+    assert pos_all.shape[1] == 2         
+    if pos_all[i][0] > width/2 or pos_all[i][0] < -1. * width/2:
+        vel_all[i][0] = -1. * vel_all[i][1]
+    if pos_all[i][1] > hieght/2 or pos_all[i][1] < -1. * hieght/2:
+        vel_all[i][1] = -1. * vel_all[i][1]
 
-        vel_all[i] += v 
-        pos_all[i] += vel_all[i]
 
-        
-    return pos_all, vel_all  
-    
+
 

@@ -1,3 +1,12 @@
+from sys import platform
+import os 
+if platform == 'linux':
+
+    print('Setting environment variables')
+    os.environ["MKL_NUM_THREADS"] = "1"
+    os.environ["NUMEXPR_NUM_THREADS"] = "1" 
+    os.environ["OMP_NUM_THREADS"] = "1"
+
 import numba
 import numpy as np
 import numba_boids_rules as r

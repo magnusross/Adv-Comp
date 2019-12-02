@@ -1,3 +1,12 @@
+from sys import platform
+import os 
+if platform == 'linux':
+
+    print('Setting environment variables')
+    os.environ["MKL_NUM_THREADS"] = "1"
+    os.environ["NUMEXPR_NUM_THREADS"] = "1" 
+    os.environ["OMP_NUM_THREADS"] = "1"
+    
 import numpy as np
 import numba 
 from numba import prange
@@ -11,7 +20,7 @@ def get_co(x_all):
     return co/N
 
 @numba.njit()
-def rule_avoid(i, pos_all, radius=50, factor=0.99):
+def rule_avoid(i, pos_all, radius=30, factor=0.002):
     
     size = len(pos_all)
     pos_all = pos_all.astype(np.float64)
@@ -29,7 +38,7 @@ def rule_avoid(i, pos_all, radius=50, factor=0.99):
 
 
 @numba.njit()
-def rule_com(i, pos_all, radius=50, factor=1):
+def rule_com(i, pos_all, radius=30, factor=0.01):
     
     size = len(pos_all)
     pos_all = pos_all.astype(np.float64)
@@ -49,7 +58,7 @@ def rule_com(i, pos_all, radius=50, factor=1):
         return ((p/N) - pos_all[i]) * factor 
 
 @numba.njit()
-def rule_match(i, pos_all, vel_all, radius=50, factor=1.01):
+def rule_match(i, pos_all, vel_all, radius=30, factor=0.01):
     
     size = len(vel_all)
     vel_all = vel_all.astype(np.float64)

@@ -1,11 +1,20 @@
+from sys import platform
+import os 
+if platform == 'linux':
+
+    print('Setting environment variables')
+    os.environ["MKL_NUM_THREADS"] = "1"
+    os.environ["NUMEXPR_NUM_THREADS"] = "1" 
+    os.environ["OMP_NUM_THREADS"] = "1"
+
 import numpy as np
 from mpi4py import MPI
 import updates
 import utilities
 np.random.seed(200)
 MASTER = 0
-N_IT = 40
-N_B = 1000
+N_IT = 50
+N_B = 3000
 DIM = 3
 
 INDICES_TO_MANAGE = 1

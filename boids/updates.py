@@ -25,7 +25,8 @@ def update_boids(pos_all, vel_all):
 
         vel_all[i] += v 
         pos_all[i] += vel_all[i]
-
+        
+        r.rule_wrap(i, pos_all)
         
     return pos_all, vel_all  
 
@@ -45,6 +46,8 @@ def update_my_boids(ind, pos_all, vel_all):
 
         my_vel[i] = vel_all[i_a] + v
         my_pos[i] = pos_all[i_a] + my_vel[i]
+        
+        r.rule_wrap(i, my_pos)
     
     return my_pos, my_vel
 

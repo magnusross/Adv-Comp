@@ -63,13 +63,11 @@ def grid_update_my_boids(my_boids, all_boids, box_size, radius=30.):
         v += rg.rule_avoid(pos_my[i], pos_all, radius=radius)
         v += rg.rule_match(pos_my[i], vel_my[i], pos_all, vel_all, radius=radius)
         
-        
-        
         vel_my[i] += v
         pos_my[i] += vel_my[i]
-
-    rg.rule_wrap(pos_my, box_size)
-    
+    # wrap
+    # rg.rule_wrap(pos_my, box_size)
+    pos_my %= box_size
 
 
 

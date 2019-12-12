@@ -12,13 +12,13 @@ import utilities
 np.random.seed(100) # 200 was problem
 
 MASTER = 0
-N_IT = 100
-N_B = 1000
-DIM = 2
-BOX_SIZE = np.array([100., 100.])
+N_IT = 50
+N_B = 2000
+DIM = 3
+BOX_SIZE = np.array([300., 300., 300.])
 
 
-RADIUS = 30
+RADIUS = 70
 
 T_SIZE = 10
 T_BOIDS = 11
@@ -28,6 +28,9 @@ T_N_SIZE = 13
 comm = MPI.COMM_WORLD
 N_proc = comm.Get_size()
 task_id = comm.Get_rank()
+
+# NN_Group = comm.group.Excl([0])
+# nncomm =  comm.Create_group(NN_Group)
 
 N_cell_ax = int((N_proc - 1)**(1/DIM))
 
@@ -39,33 +42,33 @@ coord_list = utilities.make_proc_coord_list(N_cell_ax, DIM)
 rank_to_coord = lambda i: np.array(coord_list[i-1])
 coord_to_rank = lambda c: int(np.argwhere(np.all(coord_list == c, axis=1))) + 1
 
+
+
+
 if task_id == MASTER:
     all_boids = utilities.init_cells(N_B, N_cell_ax, box_size=BOX_SIZE)
     
     results = np.zeros((N_IT, N_B, 3, DIM)) 
     # send boids
-    
+   
     for i in range(N_IT): 
-        new_all_boids = np.empty((0, 3, DIM))
+        N_proc_boids = []
         for j in range(1, N_proc):
             proc_boid = utilities.get_cells_boids(rank_to_coord(j), all_boids)
-
             comm.send(len(proc_boid), j, tag=T_SIZE)
             comm.Send([proc_boid, MPI.DOUBLE], j, tag=T_BOIDS)
-        # print('at bar')
+            N_proc_boids.append(len(proc_boid))
 
+        ind = 0
         for j in range(1, N_proc):
-            N_proc_boids = comm.recv(tag=int(str(T_SIZE) +  str(j)))
-            proc_boid = np.zeros((N_proc_boids, 3, DIM))
-            comm.Recv([proc_boid, MPI.DOUBLE], source=j, tag=int(str(T_BOIDS) +  str(j)))
-            new_all_boids = np.vstack((new_all_boids, proc_boid))
+            n = N_proc_boids[j-1]
+            comm.Recv([all_boids[ind:ind + n], MPI.DOUBLE], source=j, tag=int(str(T_BOIDS) +  str(j)))
+            ind += n
 
-        results[i] = np.copy(new_all_boids)
-        all_boids = np.copy(new_all_boids)
-     
+        results[i] = all_boids
         utilities.assign_to_cells(all_boids, N_cell_ax, BOX_SIZE)
-        # print('alll', len(all_boids))
         print(i)
+
     np.save('res_grid.npy', results)
 
 else: 
@@ -77,30 +80,36 @@ else:
     for i in range(N_IT):
         N_my_boids = comm.recv(tag=T_SIZE)
 
-        my_boids = np.zeros((N_my_boids, 3, DIM))
+        my_boids = np.zeros((N_my_boids, 3, DIM), dtype='float')
         comm.Recv([my_boids, MPI.DOUBLE], source=MASTER, tag=T_BOIDS)
 
-        print(task_id, 'recv:', len(my_boids))
-        all_my_boids = np.copy(my_boids)
+        all_nn_boids = np.empty((0, 3, DIM))
         # now get neighbour boids 
-        print('start of swap')
+        N_nn_boids = []
         for j in range(len(my_nns)):
             comm.isend(N_my_boids, coord_to_rank(my_nns[j]), tag=T_N_SIZE)
-            comm.Isend([my_boids, MPI.DOUBLE], coord_to_rank(my_nns[j]), tag=T_N_BOIDS)
-        print('middle of swap')
+
         for j in range(len(my_nns)):
-            N_nn_boids = comm.recv(source=coord_to_rank(my_nns[j]), tag=T_N_SIZE)
-            nn_boids = np.zeros((N_nn_boids, 3, DIM))
-            print('recved size')
-            comm.Irecv([nn_boids, MPI.DOUBLE], source=coord_to_rank(my_nns[j]),tag=T_N_BOIDS)
-            print('recvd swap')
-            all_my_boids = np.vstack((all_my_boids, nn_boids))
+            N_nn_boids_req = comm.irecv(source=coord_to_rank(my_nns[j]), tag=T_N_SIZE)
+            N_nn_boids.append(N_nn_boids_req.wait())
         
-        print('after swap')
+        nn_boids = np.zeros((sum(N_nn_boids), 3, DIM)) 
+        for j in range(len(my_nns)):
+            comm.Isend([my_boids, MPI.DOUBLE], coord_to_rank(my_nns[j]), tag=T_N_BOIDS)
+        
+        ind = 0
+        for j in range(len(my_nns)):
+            comm.Irecv([nn_boids[ind:ind + N_nn_boids[j]], MPI.DOUBLE], 
+                        source=coord_to_rank(my_nns[j]),tag=T_N_BOIDS)
+            ind += N_nn_boids[j] 
+
+
+        all_my_boids = np.vstack((my_boids, nn_boids))
+
         updates.grid_update_my_boids(my_boids, all_my_boids, BOX_SIZE, radius=RADIUS)
-        print('updated')
-        comm.send(N_my_boids, MASTER, tag=int(str(T_SIZE) +  str(task_id)))
+
+        # comm.send(N_my_boids, MASTER, tag=int(str(T_SIZE) +  str(task_id)))
         comm.Send([my_boids, MPI.DOUBLE], MASTER, tag=int(str(T_BOIDS) +  str(task_id)))
-        print('sent to master')
-        
+
+MPI.Finalize()
 

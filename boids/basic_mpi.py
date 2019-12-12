@@ -1,8 +1,8 @@
 from sys import platform
 import os 
-if platform == 'linux':
 
-    print('Setting environment variables')
+if platform == 'linux':
+    print('Setting environment variables...')
     os.environ["MKL_NUM_THREADS"] = "1"
     os.environ["NUMEXPR_NUM_THREADS"] = "1" 
     os.environ["OMP_NUM_THREADS"] = "1"
@@ -14,8 +14,8 @@ import utilities
 np.random.seed(200)
 MASTER = 0
 N_IT = 50
-N_B = 3000
-DIM = 3
+N_B = 500
+DIM = 2
 
 INDICES_TO_MANAGE = 1
 BCAST_POS = 2

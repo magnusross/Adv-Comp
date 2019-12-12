@@ -11,6 +11,7 @@ import numba
 import numpy as np
 import numba_boids_rules as r
 from numba import prange
+import grid_boids_rules as rg 
 
 @numba.njit()
 def update_boids(pos_all, vel_all):
@@ -51,5 +52,26 @@ def update_my_boids(ind, pos_all, vel_all):
     
     return my_pos, my_vel
 
-
+# @numba.njit()
+def grid_update_my_boids(my_boids, all_boids, box_size, radius=30.):
+    pos_all, vel_all = all_boids[:, 1], all_boids[:, 2]
+    pos_my, vel_my = my_boids[:, 1], my_boids[:, 2]
     
+    for i in range(len(pos_my)):
+        
+        v = rg.rule_com(pos_my[i], pos_all, radius=radius)
+        v += rg.rule_avoid(pos_my[i], pos_all, radius=radius)
+        v += rg.rule_match(pos_my[i], vel_my[i], pos_all, vel_all, radius=radius)
+        
+        
+        
+        vel_my[i] += v
+        pos_my[i] += vel_my[i]
+
+    rg.rule_wrap(pos_my, box_size)
+    
+
+
+
+
+

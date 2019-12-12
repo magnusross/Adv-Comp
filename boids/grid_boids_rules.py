@@ -12,7 +12,7 @@ import numba
 from numba import prange
 
 @numba.njit()
-def rule_avoid(one_my_pos, pos_all, radius=30, factor=0.002):
+def rule_avoid(one_my_pos, pos_all, radius=30, factor=0.000012):
     
     size = len(pos_all)
     p = np.zeros_like(one_my_pos)
@@ -28,7 +28,7 @@ def rule_avoid(one_my_pos, pos_all, radius=30, factor=0.002):
 
 
 @numba.njit()
-def rule_com(one_my_pos, pos_all, radius=30, factor=0.01):
+def rule_com(one_my_pos, pos_all, radius=30, factor=0.00004):
     
     size = len(pos_all)
     p = np.zeros_like(one_my_pos)
@@ -47,7 +47,7 @@ def rule_com(one_my_pos, pos_all, radius=30, factor=0.01):
         return ((p/N) - one_my_pos) * factor 
 
 @numba.njit()
-def rule_match(one_my_pos, one_my_vel, pos_all, vel_all, radius=30, factor=0.01):
+def rule_match(one_my_pos, one_my_vel, pos_all, vel_all, radius=30, factor=0.00001):
     
     size = len(vel_all)
     p = np.zeros_like(one_my_pos)
@@ -65,7 +65,7 @@ def rule_match(one_my_pos, one_my_vel, pos_all, vel_all, radius=30, factor=0.01)
     else:
         return (-one_my_vel + p/N ) * factor
 
-@numba.njit()
+# @numba.njit()
 def rule_wrap(my_pos, box_size):
     my_pos %= box_size
     

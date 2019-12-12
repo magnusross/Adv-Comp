@@ -77,11 +77,10 @@ def get_grid_num(pos_i, N_cell_ax, box_size):
 def assign_to_cells(boids_owned,  N_cell_ax, box_size):
     # this can't be jitted because boids grid is gjagged
     for i in range(len(boids_owned)):
-        
         boids_owned[i][0] = get_grid_num(boids_owned[i][1], N_cell_ax, box_size)
     
     # return boids_owned
-
+# @numba.njit()
 def get_cells_boids(cell_n, boids_owned):
     return boids_owned[np.where(np.all(boids_owned[:, 0].astype('int') == cell_n.astype('int'), axis=1))]
 

@@ -52,7 +52,7 @@ def update_my_boids(ind, pos_all, vel_all):
     
     return my_pos, my_vel
 
-# @numba.njit()
+@numba.njit()
 def grid_update_my_boids(my_boids, all_boids, box_size, radius=30.):
     pos_all, vel_all = all_boids[:, 1], all_boids[:, 2]
     pos_my, vel_my = my_boids[:, 1], my_boids[:, 2]

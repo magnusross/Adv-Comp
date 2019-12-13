@@ -7,15 +7,15 @@ from mpl_toolkits.mplot3d import Axes3D
 Writer = animation.writers['ffmpeg']
 writer = Writer(fps=30, metadata=dict(artist='Me'), bitrate=1800)
 
-fig = plt.figure(figsize=(50, 50))
+fig = plt.figure(figsize=(100, 100))
 ax = fig.add_subplot(111, projection='3d',
                     xlim=(0, 300), 
                     ylim=(0, 300),
                     zlim=(0, 300))
 
-data = np.load('res_grid.npy')
+data = np.load('res_grid_bc.npy')
 
-scat = ax.scatter(data[0, :, 1, 0], data[0, :, 1, 1], data[0, :, 1, 2], s=30, )
+scat = ax.scatter(data[0, :, 1, 0], data[0, :, 1, 1], data[0, :, 1, 2], s=50, )
 
 def animate(i):
     pos = data[i, :, 1, :]

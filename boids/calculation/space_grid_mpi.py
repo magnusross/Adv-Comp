@@ -78,9 +78,16 @@ if task_id == MASTER:
         utilities.assign_to_cells(all_boids, N_cell_ax, BOX_SIZE)
         # print(i)
     comm.Barrier()
+
     t2 = MPI.Wtime()
-    print((t2 - t1))
-    np.save('res_grid.npy', results)
+
+    f = open('results.txt', 'a+')
+    f.write('%s %s %s %s %s %s\n'%(N_IT, N_B, DIM, args.s, RADIUS, t2 - t1))
+    f.close()
+
+    np.save('data_%s_%s.npy'%(N_B, N_IT), results)
+
+
 
 else: 
     my_coords = rank_to_coord(task_id)

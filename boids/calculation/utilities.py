@@ -12,8 +12,9 @@ import numpy as np
 import numba
 np.random.seed(200)
 
-def initialise_boids(N_b, dim, vel=1, width=100):
-    pos = (2*np.random.rand(N_b, dim) - 1) * width 
+def initialise_boids(N_b, box_size, vel=1):
+    dim = len(box_size)
+    pos = np.random.rand(N_b, dim) * box_size 
     vel = (2*np.random.rand(N_b, dim) - 1) * vel
     return pos.astype('float64'), vel.astype('float64')
 

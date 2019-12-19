@@ -32,7 +32,7 @@ def update_boids(pos_all, vel_all):
     return pos_all, vel_all  
 
 @numba.njit()
-def update_my_boids(ind, pos_all, vel_all):
+def update_my_boids(ind, pos_all, vel_all, box_size, radius=30.):
 
     n_my_b = ind[1] - ind[0]
     dim = pos_all.shape[1]
@@ -41,14 +41,14 @@ def update_my_boids(ind, pos_all, vel_all):
     for i in prange(n_my_b):
         i_a = ind[0] +  i 
 
-        v = r.rule_com(i_a, pos_all)
-        v += r.rule_avoid(i_a, pos_all)
-        v += r.rule_match(i_a, pos_all, vel_all)
+        v = r.rule_com(i_a, pos_all, radius=radius)
+        v += r.rule_avoid(i_a, pos_all, radius=radius)
+        v += r.rule_match(i_a, pos_all, vel_all, radius=radius)
 
         my_vel[i] = vel_all[i_a] + v
         my_pos[i] = pos_all[i_a] + my_vel[i]
         
-        r.rule_wrap(i, my_pos)
+        my_pos[i] %= box_size
     
     return my_pos, my_vel
 

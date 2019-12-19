@@ -11,12 +11,30 @@ import numpy as np
 from mpi4py import MPI
 import updates
 import utilities
+import argparse
 np.random.seed(200)
-MASTER = 0
-N_IT = 50
-N_B = 500
-DIM = 2
 
+parser = argparse.ArgumentParser(description='Spatial grid based parrallel boids simulation, with MPI.')
+parser.add_argument("--n", default=100, type=int, help="Number of iterations")
+parser.add_argument("--nb", default=100, type=int, help="Number of boids")
+parser.add_argument("--d", default=3, type=int, choices=[2, 3],
+                        help="Number of dimensions")
+parser.add_argument("--s", default=300., type=float, help="Box size")
+parser.add_argument("--r", default=50., type=float, help="Boids field of view")
+parser.add_argument("--f", default='results_basic.txt', help="Results out filename")
+args = parser.parse_args()
+
+
+N_IT = args.n
+N_B = args.nb
+DIM = args.d 
+BOX_SIZE = np.ones(DIM, dtype=float) * args.s
+RADIUS = args.r
+FILE_NAME = args.f
+SAVE = False
+
+
+MASTER = 0
 INDICES_TO_MANAGE = 1
 BCAST_POS = 2
 BCAST_VEL = 3
@@ -27,8 +45,8 @@ task_id = comm.Get_rank()
 
 
 if task_id == MASTER:
-
-    pos_all, vel_all = utilities.initialise_boids(N_B, DIM)
+    t1 = MPI.Wtime()
+    pos_all, vel_all = utilities.initialise_boids(N_B, BOX_SIZE)
     
     results = np.zeros((N_IT, 2, N_B, DIM))     
 
@@ -55,7 +73,16 @@ if task_id == MASTER:
 
             pos_all[boids_index[j][0]:boids_index[j][1]] = mini_pos
             vel_all[boids_index[j][0]:boids_index[j][1]] = mini_vel
-    np.save('results_mpi.npy', results)   
+    comm.Barrier()
+
+    t2 = MPI.Wtime()
+        
+    f = open(FILE_NAME, 'a+')
+    f.write('%s %s %s %s %s %s\n'%(N_IT, N_B, DIM, args.s, RADIUS, t2 - t1))
+    print('%s %s %s %s %s %s\n'%(N_IT, N_B, DIM, args.s, RADIUS, t2 - t1))
+    f.close()
+    if SAVE:
+        np.save('data_%s_%s_basic.npy'%(N_B, N_IT), results)   
 
 
 
@@ -68,7 +95,8 @@ if task_id != MASTER:
 
         vel_all = np.empty((N_B, DIM))
         comm.Bcast([vel_all, MPI.DOUBLE], root=MASTER)
-        my_upd_pos, my_upd_vel = updates.update_my_boids(my_inds, pos_all, vel_all)
+        my_upd_pos, my_upd_vel = updates.update_my_boids(my_inds, pos_all, 
+                                                        vel_all, BOX_SIZE, radius=RADIUS)
 
         tag_pos = int(str(i) + str(task_id) + '0')
         tag_vel = int(str(i) + str(task_id) + '1')
@@ -76,6 +104,7 @@ if task_id != MASTER:
         comm.Send([my_upd_pos, MPI.DOUBLE], MASTER, tag=tag_pos)
         comm.Send([my_upd_vel, MPI.DOUBLE], MASTER, tag=tag_vel)
     
+    comm.Barrier()
         
     
 

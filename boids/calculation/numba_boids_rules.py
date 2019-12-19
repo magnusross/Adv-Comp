@@ -103,13 +103,6 @@ def rule_wall_bounce_2D(i, pos_all, vel_all, width=800., hieght=800.):
     if pos_all[i][1] > hieght/2 or pos_all[i][1] < -1. * hieght/2:
         vel_all[i][1] = -1. * vel_all[i][1]
 
-@numba.njit()
-def rule_wrap(i, pos_all, width=300., hieght=300.):
-
-    pos = pos_all[i]
-    pos[0] = ((pos[0] + width/2) % width) - width
-    pos[1] = ((pos[1] + hieght/2) % hieght) - hieght 
-
     
 
 

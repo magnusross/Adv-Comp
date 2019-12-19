@@ -22,7 +22,7 @@ parser.add_argument("--sb", default=10, type=int, help="Step of N_b")
 parser.add_argument("--mb", default=1000, type=int, help="Max boids")
 parser.add_argument("--np", default=9, type=int, help='Number of processors')
 parser.add_argument("--dir", default='./NB_Scaling_RS/', type=str, help='Dir to save runscripts in')
-parser.add_argument("--mpip", default='./../calculation/space_grid.py', type=str, help='Path to MPI code')
+parser.add_argument("--mpip", default='./../calculation/space_grid_mpi.py', type=str, help='Path to MPI code')
 
 args = parser.parse_args()
 

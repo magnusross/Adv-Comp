@@ -1,4 +1,4 @@
-#!/bin/bash                                                                                  
+                                                                                
 #PBS -l nodes=2:ppn=14
 #PBS -l walltime=02:00:00                                                                       
 # Define the working directory                                                               

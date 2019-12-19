@@ -20,11 +20,9 @@ parser.add_argument("--d", default=3, type=int, choices=[2, 3],
                         help="Number of dimensions")
 parser.add_argument("--s", default=300., type=float, help="Box size")
 parser.add_argument("--r", default=50., type=float, help="Boids field of view")
+parser.add_argument("--f", default='results.txt', help="Results out filename")
 args = parser.parse_args()
 
-comm = MPI.COMM_WORLD
-N_proc = comm.Get_size()
-task_id = comm.Get_rank()
 
 
 N_IT = args.n
@@ -32,8 +30,14 @@ N_B = args.nb
 DIM = args.d 
 BOX_SIZE = np.ones(DIM, dtype=float) * args.s
 RADIUS = args.r
+FILE_NAME = args.f
 
 
+comm = MPI.COMM_WORLD
+N_proc = comm.Get_size()
+task_id = comm.Get_rank()
+
+SAVE = False
 MASTER = 0
 T_SIZE = 10
 T_BOIDS = 11
@@ -81,11 +85,12 @@ if task_id == MASTER:
 
     t2 = MPI.Wtime()
 
-    f = open('results.txt', 'a+')
+    f = open(FILE_NAME, 'a+')
     f.write('%s %s %s %s %s %s\n'%(N_IT, N_B, DIM, args.s, RADIUS, t2 - t1))
+    print('%s %s %s %s %s %s\n'%(N_IT, N_B, DIM, args.s, RADIUS, t2 - t1))
     f.close()
-
-    np.save('data_%s_%s.npy'%(N_B, N_IT), results)
+    if SAVE:
+        np.save('data_%s_%s.npy'%(N_B, N_IT), results)
 
 
 
@@ -127,7 +132,5 @@ else:
         comm.Send([my_boids, MPI.DOUBLE], MASTER, tag=int(str(T_BOIDS) +  str(task_id)))
     
     comm.Barrier()
-
-
 MPI.Finalize()
 

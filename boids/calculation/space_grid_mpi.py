@@ -110,11 +110,11 @@ else:
         # now get neighbour boids 
         N_nn_boids = []
         for j in range(len(my_nns)):
-            comm.isend(N_my_boids, coord_to_rank(my_nns[j]), tag=T_N_SIZE)
+            comm.send(N_my_boids, coord_to_rank(my_nns[j]), tag=T_N_SIZE)
 
         for j in range(len(my_nns)):
-            N_nn_boids_req = comm.irecv(source=coord_to_rank(my_nns[j]), tag=T_N_SIZE)
-            N_nn_boids.append(N_nn_boids_req.wait())
+            N_nn_boids_req = comm.recv(source=coord_to_rank(my_nns[j]), tag=T_N_SIZE)
+            N_nn_boids.append(N_nn_boids_req)#.wait())
         
         nn_boids = np.zeros((sum(N_nn_boids), 3, DIM)) 
         for j in range(len(my_nns)):

@@ -136,3 +136,5 @@ dmypy.json
 
 # NumPy results
 *.npy 
+
+*.txt

@@ -10,6 +10,8 @@ if platform == 'linux':
 
 import numpy as np
 import numba
+import grid_boids_rules as rg 
+
 np.random.seed(200)
 '''
 [('lab', 'int8'), ('pos', '2float64'), ('vel', '2float64')]
@@ -17,91 +19,95 @@ np.random.seed(200)
 '''
 
 
-pos_vel2d_dt = np.dtype({'names':['lab', 'pos', 'vel'],
-                                 'formats':['int8', '%sfloat64'%(2), '%sfloat64'%(2)]})
-pos_vel3d_dt = np.dtype({'names':['lab', 'pos', 'vel'],
-                                 'formats':['int8', '%sfloat64'%(3), '%sfloat64'%(3)]})
-
-grid2d_dt = np.dtype({'names':['lab', 'grid'],
-                                    'formats':['int8', '%sint8'%(2)]})
-grid3d_dt = np.dtype({'names':['lab', 'grid'],
-                                    'formats':['int8', '%sint8'%(3)]})
-
-nb_pos_vel_dt = [numba.from_dtype(pos_vel2d_dt), numba.from_dtype(pos_vel3d_dt)]
-nb_grid_dt = [numba.from_dtype(grid2d_dt), numba.from_dtype(grid3d_dt)]
-
-# @numba.njit()
-def initialise_boids(N_b, box_size, vel=1, dt=nb_grid_dt):
+@numba.njit()
+def initialise_boids(N_b, box_size, vel=1):
     dim = len(box_size)
-  
-    pos_vel = np.zeros(N_b, dtype={'names':['lab', 'pos', 'vel'],
-                                 'formats':['int8', '%sfloat64'%(dim), '%sfloat64'%(dim)]})
 
-    pos_vel['lab'] = np.arange(N_b)
-    pos_vel['pos'] = np.random.rand(N_b, dim) * box_size 
-    pos_vel['vel'] = (2*np.random.rand(N_b, dim) - 1) * vel
+    pos = np.random.rand(N_b, dim) * box_size 
+    vel = (2*np.random.rand(N_b, dim) - 1) * vel
 
-    return pos_vel
+    return pos, vel
 
 # @numba.njit()
-def initialise_grid(pos_vel, box_size, radius):
-    grid_list = np.zeros(len(pos_vel), dtype=numba.from_dtype(np.dtype({'names':['lab', 'grid'],
-                                    'formats':['int8', '%sint8'%(len(box_size))]})))
-    for lab in pos_vel['lab']:
-        grid_list['lab'][lab] = lab
-        pos = pos_vel['pos'][np.where(lab == pos_vel['lab'])]
-        grid_list['grid'][np.where(lab == grid_list['lab'])] = grid_from_pos(pos, box_size, radius) 
-    
+def initialise_grid(pos, vel, box_size, radius):
+    grid_list = np.zeros((len(pos), len(box_size)), dtype='int')
+    for i in range(len(grid_list)):
+        grid_list[i] = grid_from_pos(pos[i], box_size, radius) 
+
     return grid_list 
-
-
 
 
 @numba.njit()
 def grid_from_pos(pos, box_size, radius):
     N_cell = box_size // radius
-    grid = pos // (box_size / N_cell)
+    grid = np.floor_divide(pos , box_size / N_cell)
     return grid
 
 @numba.njit()
-def nb_get_grid_updates(upd_labs, grid_list, pos_vel, box_size, radius):
-    # lab_diff = []
-    # grid_diff = []
-   
+def get_new_grid(upd_labs, grid_list, pos, vel, box_size, radius):
+    new_grid = np.copy(grid_list)
     for lab in upd_labs:
-        print(pos_vel[1])#[np.where(lab == pos_vel['lab'])]
-        
-        # current_grid = grid_list['grid'][np.where(lab == grid_list['lab'])] 
-        # new_grid = grid_from_pos(pos, box_size, radius) 
-        '''
-        if np.any(new_grid != current_grid):
-            lab_diff.append(lab)
-            grid_diff.append(new_grid)
-        '''
-    # return 1 #lab_diff, grid_diff
+        new_grid[lab] = grid_from_pos(pos[lab], box_size, radius) 
+    return new_grid
 
-def get_grid_updates(upd_labs, grid_list, pos_vel, box_size, radius):
-    lab_upd, grid_upd = nb_get_grid_updates(upd_labs, grid_list, pos_vel, box_size, radius)
+def get_grid_updates(upd_labs, grid_list, pos, vel, box_size, radius):
     
-    if lab_upd:
-        upd_grid = np.zeros(len(lab_upd), dtype=grid_list.dtype)
-        upd_grid['lab'] = np.array(lab_upd)
-        upd_grid['grid'] = np.array(grid_upd)
-        return upd_grid
+    new_grid = get_new_grid(upd_labs, grid_list, pos, vel, box_size, radius)
+    diff_labs = np.where(np.any(new_grid != grid_list, axis=1))
+    
+    return diff_labs[0], new_grid[diff_labs]
+
+@numba.njit()
+def get_adj_labs(upd_lab, grid_list):
+    my_grid = grid_list[upd_lab]
+    adj = []
+    
+    for i in range(len(grid_list)):
+        if np.any(np.abs(my_grid - grid_list[i])) <= 0:
+            adj.append(i)
+    
+    return adj
+
+@numba.njit()
+def better_update_boids(my_labs, grid_all, pos_all, vel_all, box_size, radius):
+    
+    for lab in my_labs:
+        adj_labs = np.array(get_adj_labs(lab, grid_all))
+        adj_pos = pos_all[adj_labs]
+        adj_vel = vel_all[adj_labs]
+        
+        v = rg.rule_com(pos_all[lab], adj_pos, radius=radius)
+        v += rg.rule_avoid(pos_all[lab], adj_pos, radius=radius)
+        v += rg.rule_match(pos_all[lab], vel_all[lab], adj_pos, adj_vel, radius=radius)
+
+        vel_all[lab] += v
+        pos_all[lab] += vel_all[lab]
+        
+    pos_all %= box_size
 
 
-pos_vel = initialise_boids(10, np.array([100., 100.]), 1.)
-grid = initialise_grid(pos_vel, np.array([100., 100.]), 1.)
 
-pos_vel['pos'][1] = np.array([1., 1.])
 
-print(get_grid_updates([0], grid, pos_vel, np.array([100., 100.]), 1.))
+"""
 
-print(nb_get_grid_updates([1], grid, pos_vel, np.array([100., 100.]), 1.))
-print(get_grid_updates([1], grid, pos_vel, np.array([100., 100.]), 1.))
+pos ,vel = initialise_boids(1000, np.array([100., 100.]), 10.)
+grid = initialise_grid(pos, vel, np.array([100., 100.]), 10.)
 
 
 
+pos[1] = np.array([11., 17.])
+
+print(get_grid_updates([0], grid, pos, vel, np.array([100., 100.]), 1.))
+
+print(get_grid_updates([1], grid, pos, vel, np.array([100., 100.]), 1.))
+print(get_adj_labs(3, grid))
+
+print(pos)
+better_update_boids([0, 2, 3, 4], grid, pos, vel, np.array([100., 100.]), 10.)
+print(pos)
+
+
+"""
     
     
 

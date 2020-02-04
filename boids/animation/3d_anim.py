@@ -13,7 +13,7 @@ ax = fig.add_subplot(111, projection='3d',
                     ylim=(0, 300),
                     zlim=(0, 300))
 
-data = np.load('res_grid_bc.npy')
+data = np.load('./res_grid_bc.npy')
 
 scat = ax.scatter(data[0, :, 1, 0], data[0, :, 1, 1], data[0, :, 1, 2], s=50, )
 

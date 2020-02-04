@@ -12,7 +12,7 @@ import numba
 from numba import prange
 
 @numba.njit()
-def rule_avoid(one_my_pos, pos_all, radius=30, factor=0.000012):
+def rule_avoid(one_my_pos, pos_all, radius=30, factor=0.00002):
     
     size = len(pos_all)
     p = np.zeros_like(one_my_pos)
@@ -28,7 +28,7 @@ def rule_avoid(one_my_pos, pos_all, radius=30, factor=0.000012):
 
 
 @numba.njit()
-def rule_com(one_my_pos, pos_all, radius=30, factor=0.00004):
+def rule_com(one_my_pos, pos_all, radius=30, factor=0.001):
     
     size = len(pos_all)
     p = np.zeros_like(one_my_pos)

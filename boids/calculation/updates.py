@@ -18,7 +18,7 @@ def update_boids(pos_all, vel_all):
     '''
     objs option for numba compile 
     '''
-    for i in prange(len(pos_all)):
+    for i in range(len(pos_all)):
         v = r.rule_com(i, pos_all)
         v += r.rule_avoid(i, pos_all)
         v += r.rule_match(i, pos_all, vel_all)
@@ -38,7 +38,7 @@ def update_my_boids(ind, pos_all, vel_all, box_size, radius=30.):
     dim = pos_all.shape[1]
     my_pos, my_vel = np.empty((n_my_b, dim)), np.empty((n_my_b, dim))
 
-    for i in prange(n_my_b):
+    for i in range(n_my_b):
         i_a = ind[0] +  i 
 
         v = r.rule_com(i_a, pos_all, radius=radius)
@@ -68,6 +68,8 @@ def grid_update_my_boids(my_boids, all_boids, box_size, radius=30.):
     # wrap
     # rg.rule_wrap(pos_my, box_size)
     pos_my %= box_size
+
+
 
 
 

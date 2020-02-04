@@ -2,7 +2,7 @@ import math
 import argparse
 
 def make_runscript(N_proc, N_b,  mpi_path, N_it=100,
-                    wall_time='00:05:00',
+                    wall_time='00:03:00',
                     template_path='runjob_temp.sh'):
     
     nodes = math.ceil(N_proc / 16)

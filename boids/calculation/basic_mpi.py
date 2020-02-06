@@ -10,14 +10,14 @@ if platform == 'linux':
 import numpy as np
 from mpi4py import MPI
 import updates
-import utilities
+import basic_util as util 
 import argparse
 np.random.seed(200)
 
 parser = argparse.ArgumentParser(description='Spatial grid based parrallel boids simulation, with MPI.')
-parser.add_argument("--n", default=100, type=int, help="Number of iterations")
+parser.add_argument("--n", default=50, type=int, help="Number of iterations")
 parser.add_argument("--nb", default=100, type=int, help="Number of boids")
-parser.add_argument("--d", default=3, type=int, choices=[2, 3],
+parser.add_argument("--d", default=2, type=int, choices=[2, 3],
                         help="Number of dimensions")
 parser.add_argument("--s", default=300., type=float, help="Box size")
 parser.add_argument("--r", default=50., type=float, help="Boids field of view")
@@ -46,16 +46,15 @@ task_id = comm.Get_rank()
 
 if task_id == MASTER:
     t1 = MPI.Wtime()
-    pos_all, vel_all = utilities.initialise_boids(N_B, BOX_SIZE)
+    pos_all, vel_all = util.initialise_boids(N_B, BOX_SIZE)
     
     results = np.zeros((N_IT, 2, N_B, DIM))     
 
-    boids_index = utilities.make_proc_boid_ind(N_B, N_proc - 1)
+    boids_index = util.make_proc_boid_ind(N_B, N_proc - 1)
     for i in range(N_proc-1):
         comm.send(boids_index[i], i+1, tag=INDICES_TO_MANAGE)
     
     for i in range(N_IT):
-        print(i)
         results[i] = pos_all, vel_all
 
         comm.Bcast([pos_all, MPI.DOUBLE], root=MASTER)
@@ -95,7 +94,7 @@ if task_id != MASTER:
 
         vel_all = np.empty((N_B, DIM))
         comm.Bcast([vel_all, MPI.DOUBLE], root=MASTER)
-        my_upd_pos, my_upd_vel = updates.update_my_boids(my_inds, pos_all, 
+        my_upd_pos, my_upd_vel = updates.basic_update(my_inds, pos_all, 
                                                         vel_all, BOX_SIZE, radius=RADIUS)
 
         tag_pos = int(str(i) + str(task_id) + '0')

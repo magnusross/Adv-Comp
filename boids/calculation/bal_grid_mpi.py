@@ -10,14 +10,13 @@ if platform == 'linux':
 import numpy as np
 from mpi4py import MPI
 import updates
-import better_utilities
-import utilities
+import bal_grid_util as util 
 import argparse
 np.random.seed(200)
 
 parser = argparse.ArgumentParser(description='Spatial grid based parrallel boids simulation, with MPI.')
 parser.add_argument("--n", default=500, type=int, help="Number of iterations")
-parser.add_argument("--nb", default=1000, type=int, help="Number of boids")
+parser.add_argument("--nb", default=100, type=int, help="Number of boids")
 parser.add_argument("--d", default=2, type=int, choices=[2, 3],
                         help="Number of dimensions")
 parser.add_argument("--s", default=300., type=float, help="Box size")
@@ -56,12 +55,12 @@ task_id = comm.Get_rank()
 if task_id == MASTER:
 
     t1 = MPI.Wtime()
-    pos_all, vel_all = better_utilities.initialise_boids(N_B, BOX_SIZE)
-    grid_all = better_utilities.initialise_grid(pos_all, vel_all, BOX_SIZE, RADIUS)
+    pos_all, vel_all = util.initialise_boids(N_B, BOX_SIZE)
+    grid_all = util.initialise_grid(pos_all, BOX_SIZE, RADIUS)
 
     results = np.zeros((N_IT, 2, N_B, DIM)) 
 
-    boids_index = utilities.make_proc_boid_ind(N_B, N_proc - 1)
+    boids_index = util.make_proc_boid_ind(N_B, N_proc - 1)
     for i in range(N_proc-1):
         comm.send(boids_index[i], i+1, tag=INDICES_TO_MANAGE)
     
@@ -122,13 +121,14 @@ if task_id != MASTER:
         grid_all = np.empty((N_B, DIM))
         comm.Bcast([grid_all, MPI.INT])
 
-        better_utilities.better_update_boids(my_labs, grid_all, pos_all,
-                                             vel_all, BOX_SIZE, RADIUS)
+        updates.bal_grid_update(my_labs, grid_all, pos_all,
+                                vel_all, BOX_SIZE, RADIUS)
+
         my_upd_pos = pos_all[my_labs]
         my_upd_vel = vel_all[my_labs]
 
-        diff_labs, new_grid = better_utilities.get_grid_updates(my_labs, grid_all, pos_all, 
-                                                                vel_all, BOX_SIZE, RADIUS)
+        diff_labs, new_grid = util.get_grid_updates(my_labs, grid_all, pos_all, 
+                                                     vel_all, BOX_SIZE, RADIUS)
 
         comm.Send([my_upd_pos, MPI.DOUBLE], MASTER, tag=T_POS)
         comm.Send([my_upd_vel, MPI.DOUBLE], MASTER, tag=T_VEL)

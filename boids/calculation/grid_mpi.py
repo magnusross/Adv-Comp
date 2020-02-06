@@ -9,13 +9,13 @@ if platform == 'linux':
 import numpy as np
 from mpi4py import MPI
 import updates
-import utilities
+import grid_util as util
 import argparse
 np.random.seed(100) #
 
 parser = argparse.ArgumentParser(description='Spatial grid based parrallel boids simulation, with MPI.')
 parser.add_argument("--n", default=50, type=int, help="Number of iterations")
-parser.add_argument("--nb", default=5000, type=int, help="Number of boids")
+parser.add_argument("--nb", default=100, type=int, help="Number of boids")
 parser.add_argument("--d", default=2, type=int, choices=[2, 3],
                         help="Number of dimensions")
 parser.add_argument("--s", default=300., type=float, help="Box size")
@@ -53,21 +53,21 @@ if not nearest_pow == N_proc - 1:
 if args.s / N_cell_ax < RADIUS:
     raise ValueError('Boids radius too large, extends past nearest nieghbour.')
 
-coord_list = utilities.make_proc_coord_list(N_cell_ax, DIM)
+coord_list = util.make_proc_coord_list(N_cell_ax, DIM)
 rank_to_coord = lambda i: np.array(coord_list[i-1])
 coord_to_rank = lambda c: int(np.argwhere(np.all(coord_list == c, axis=1))) + 1
 
 
 if task_id == MASTER:
     t1 = MPI.Wtime()
-    all_boids = utilities.init_cells(N_B, N_cell_ax, box_size=BOX_SIZE)
+    all_boids = util.init_cells(N_B, N_cell_ax, box_size=BOX_SIZE)
     
     results = np.zeros((N_IT, N_B, 3, DIM)) 
     # send boids
     for i in range(N_IT): 
         N_proc_boids = []
         for j in range(1, N_proc):
-            proc_boid = utilities.get_cells_boids(rank_to_coord(j), all_boids)
+            proc_boid = util.get_cells_boids(rank_to_coord(j), all_boids)
             comm.send(len(proc_boid), j, tag=T_SIZE)
             comm.Send([proc_boid, MPI.DOUBLE], j, tag=T_BOIDS)
             N_proc_boids.append(len(proc_boid))
@@ -79,7 +79,7 @@ if task_id == MASTER:
             ind += n
 
         results[i] = all_boids
-        utilities.assign_to_cells(all_boids, N_cell_ax, BOX_SIZE)
+        util.assign_to_cells(all_boids, N_cell_ax, BOX_SIZE)
         # print(i)
     comm.Barrier()
 
@@ -98,7 +98,7 @@ else:
     my_coords = rank_to_coord(task_id)
     # the cell label starts from 0 wheras working processor
     # ranks sart from 1 so cell_n = task_id - 1 
-    my_nns = utilities.get_neigh(my_coords, N_cell_ax, DIM)
+    my_nns = util.get_neigh(my_coords, N_cell_ax, DIM)
     
     for i in range(N_IT):
         N_my_boids = comm.recv(tag=T_SIZE)
@@ -128,7 +128,7 @@ else:
 
         all_my_boids = np.vstack((my_boids, nn_boids))
 
-        updates.grid_update_my_boids(my_boids, all_my_boids, BOX_SIZE, radius=RADIUS)
+        updates.grid_update(my_boids, all_my_boids, BOX_SIZE, radius=RADIUS)
         comm.Send([my_boids, MPI.DOUBLE], MASTER, tag=int(str(T_BOIDS) +  str(task_id)))
     
     comm.Barrier()

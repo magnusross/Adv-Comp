@@ -1,7 +1,7 @@
 import numpy as np 
 import updates 
 import tqdm
-from utilities import make_2D_square_walls, initialise_boids
+from basic_util import make_2D_square_walls, initialise_boids
 np.random.seed(200)
 
 
@@ -15,7 +15,7 @@ print(pos_all.shape)
 N = 10
 results = np.zeros((N, 2, N_b, dim))                                           
 for j in tqdm.tqdm(range(N)):
-    results[j] = updates.update_boids(pos_all, vel_all)
+    results[j] = updates.serial_update(pos_all, vel_all)
 np.save('results_serial.npy', results)
 
 

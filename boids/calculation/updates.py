@@ -9,12 +9,14 @@ if platform == 'linux':
 
 import numba
 import numpy as np
-import numba_boids_rules as r
+import basic_rules as r
+import grid_rules as rg 
+import bal_grid_util as butil
 from numba import prange
-import grid_boids_rules as rg 
+
 
 @numba.njit()
-def update_boids(pos_all, vel_all):
+def serial_update(pos_all, vel_all):
     '''
     objs option for numba compile 
     '''
@@ -32,7 +34,7 @@ def update_boids(pos_all, vel_all):
     return pos_all, vel_all  
 
 @numba.njit()
-def update_my_boids(ind, pos_all, vel_all, box_size, radius=30.):
+def basic_update(ind, pos_all, vel_all, box_size, radius=30.):
 
     n_my_b = ind[1] - ind[0]
     dim = pos_all.shape[1]
@@ -53,7 +55,7 @@ def update_my_boids(ind, pos_all, vel_all, box_size, radius=30.):
     return my_pos, my_vel
 
 @numba.njit()
-def grid_update_my_boids(my_boids, all_boids, box_size, radius=30.):
+def grid_update(my_boids, all_boids, box_size, radius=30.):
     pos_all, vel_all = all_boids[:, 1], all_boids[:, 2]
     pos_my, vel_my = my_boids[:, 1], my_boids[:, 2]
     
@@ -68,6 +70,23 @@ def grid_update_my_boids(my_boids, all_boids, box_size, radius=30.):
     # wrap
     # rg.rule_wrap(pos_my, box_size)
     pos_my %= box_size
+
+@numba.njit()
+def bal_grid_update(my_labs, grid_all, pos_all, vel_all, box_size, radius):
+    
+    for lab in my_labs:
+        adj_labs = np.array(butil.get_adj_labs(lab, grid_all))
+        adj_pos = pos_all[adj_labs]
+        adj_vel = vel_all[adj_labs]
+        
+        v = rg.rule_com(pos_all[lab], adj_pos, radius=radius)
+        v += rg.rule_avoid(pos_all[lab], adj_pos, radius=radius)
+        v += rg.rule_match(pos_all[lab], vel_all[lab], adj_pos, adj_vel, radius=radius)
+
+        vel_all[lab] += v
+        pos_all[lab] += vel_all[lab]
+        
+    pos_all %= box_size
 
 
 

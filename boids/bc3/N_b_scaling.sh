@@ -14,7 +14,7 @@ python N_b_scaling.py --sb 1000 --mb 15000 --np 37 --rname basic.txt --dir $RS_D
 
 for i in $RS_DIR*; do 
     for ((j=0; j<3; j++)); do
-        qsub -q teaching $i
+        qsub -q veryshort $i
         sleep 5s 
     done
 done 
@@ -28,7 +28,7 @@ python N_b_scaling.py --sb 1000 --mb 15000 --np 37 --rname grid.txt --dir $RS_DI
 
 for i in $RS_DIR*; do 
     for ((j=0; j<3; j++)); do
-        qsub -q teaching $i
+        qsub -q veryshort $i
         sleep 5s 
     done
 done 
@@ -43,7 +43,7 @@ python N_b_scaling.py --sb 1000 --mb 15000 --np 37 --rname grid.txt --dir $RS_DI
 
 for i in $RS_DIR*; do 
     for ((j=0; j<3; j++)); do
-        qsub -q teaching $i
+        qsub -q veryshort $i
         sleep 5s 
     done
 done 

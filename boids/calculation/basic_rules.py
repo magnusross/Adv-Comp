@@ -28,7 +28,7 @@ def rule_avoid(i, pos_all, radius=30, factor=0.002):
 
     rel_pos = pos_all - pos_all[i]
 
-    for j in prange(size):
+    for j in range(size):
         dist = np.power(rel_pos[j], 2)  
         if i != j and np.sqrt(np.sum(dist))< radius:  
             for k in range(len(p)):
@@ -46,7 +46,7 @@ def rule_com(i, pos_all, radius=30, factor=0.01):
     N = 0
     rel_pos = pos_all - pos_all[i]
 
-    for j in prange(size):
+    for j in range(size):
         dist = np.power(rel_pos[j], 2)  
         if i != j and np.sqrt(np.sum(dist))< radius:  
             N += 1 
@@ -66,7 +66,7 @@ def rule_match(i, pos_all, vel_all, radius=30, factor=0.01):
     N = 0
     rel_pos = pos_all - pos_all[i]
 
-    for j in prange(size):
+    for j in range(size):
         dist = np.power(rel_pos[j], 2)  
         if i != j and np.sqrt(np.sum(dist))< radius:  
             N += 1 
@@ -87,7 +87,7 @@ def rule_wall_avoid(i, pos_all, pos_obj, radius=30, factor=100):
     p = np.zeros_like(pos_all[0])
     
     rel_pos = pos_obj - pos_all[i]
-    for j in prange(size):
+    for j in range(size):
         dist = np.power(rel_pos[j], 2) 
         if i != j and np.sqrt(np.sum(dist)) < radius:  
             for k in range(len(p)):

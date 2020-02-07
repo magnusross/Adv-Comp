@@ -142,7 +142,7 @@ def get_grid_updates(upd_labs, grid, pos, vel, box_size, radius):
     """  
 
     
-    new_grid = get_new_grid(upd_labs, grid pos, vel, box_size, radius)
+    new_grid = get_new_grid(upd_labs, grid, pos, vel, box_size, radius)
     diff_labs = np.where(np.any(new_grid != grid, axis=1))
     
     return diff_labs[0], new_grid[diff_labs]
@@ -161,7 +161,7 @@ def get_adj_labs(upd_lab, grid):
 
     my_grid = grid[upd_lab]
     adj = []
-    for i in range(len(grid_list)):
+    for i in range(len(grid)):
         if np.any(np.abs(my_grid - grid[i])) <= 0:
             adj.append(i)
     

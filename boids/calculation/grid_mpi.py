@@ -86,8 +86,8 @@ if task_id == MASTER:
     t2 = MPI.Wtime()
 
     f = open(FILE_NAME, 'a+')
-    f.write('%s %s %s %s %s %s\n'%(N_IT, N_B, DIM, args.s, RADIUS, t2 - t1))
-    print('%s %s %s %s %s %s\n'%(N_IT, N_B, DIM, args.s, RADIUS, t2 - t1))
+    f.write('%s %s %s %s %s %s %s\n'%(N_proc, N_IT, N_B, DIM, args.s, RADIUS, t2 - t1))
+    print('%s %s %s %s %s %s %s\n'%(N_proc, N_IT, N_B, DIM, args.s, RADIUS, t2 - t1))
     f.close()
     if SAVE:
         np.save('data_%s_%s.npy'%(N_B, N_IT), results)

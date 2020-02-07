@@ -14,7 +14,7 @@ np.random.seed(200)
 
 def initialise_boids(N_b, box_size, vel=1.):
     """
-    intilaises position and 
+    intilaises position and velocity
     
     Arguments:
         N_b {int} -- number of boids 

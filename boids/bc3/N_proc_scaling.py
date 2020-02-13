@@ -27,7 +27,7 @@ parser.add_argument("--rname", default='results.txt', type=str, help='name of re
 
 args = parser.parse_args()
 
-N_B = args.mb
+N_B = args.b
 DIR = args.dir
 MPI_PATH = args.mpip
 RES_NAME = args.rname

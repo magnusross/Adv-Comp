@@ -14,8 +14,8 @@ import argparse
 np.random.seed(100) #
 
 parser = argparse.ArgumentParser(description='Spatial grid based parrallel boids simulation, with MPI.')
-parser.add_argument("--n", default=50, type=int, help="Number of iterations")
-parser.add_argument("--nb", default=100, type=int, help="Number of boids")
+parser.add_argument("--n", default=500, type=int, help="Number of iterations")
+parser.add_argument("--nb", default=500, type=int, help="Number of boids")
 parser.add_argument("--d", default=2, type=int, choices=[2, 3],
                         help="Number of dimensions")
 parser.add_argument("--s", default=300., type=float, help="Box size")
@@ -60,7 +60,7 @@ coord_to_rank = lambda c: int(np.argwhere(np.all(coord_list == c, axis=1))) + 1
 
 if task_id == MASTER:
     t1 = MPI.Wtime()
-    all_boids = util.init_cells(N_B, N_cell_ax, box_size=BOX_SIZE)
+    all_boids = util.initialise_boids(N_B, N_cell_ax, BOX_SIZE)
     
     results = np.zeros((N_IT, N_B, 3, DIM)) 
     # send boids

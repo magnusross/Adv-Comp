@@ -21,18 +21,17 @@ def initialise_boids(N_b, box_size, vel=1.):
     
     Arguments:
         N_b {int} -- number of boids 
-        box_size {np array} -- size of simulation region
+        box_size {numpy array} -- size of simulation region 
     
     Keyword Arguments:
-        vel {float} --  veloctiy scale for boids(default: {1})
+        vel {float} --  velocity scale for boids(default: {1})
     
     Returns:
-        pos [np array] -- inital positions
-        vel [np array] -- inital velocities
+        tuple -- postions and velocities 
     """  
 
     dim = len(box_size)
-    pos = np.random.rand(N_b, dim) * box_size 
+    pos = np.random.rand(N_b, dim) * box_size/10 + box_size/2
     vel = (2*np.random.rand(N_b, dim) - 1) * vel
     return pos, vel
 
@@ -42,12 +41,12 @@ def initialise_grid(pos, box_size, radius):
     initialises grid stucture for boids 
     
     Arguments:
-        pos {np array} -- N x D array of all boids positions 
-        box_size {np array} -- D x 1 array, size of simulation region 
+        pos {numpy array} -- N x D array of boids positions 
+        box_size {numpy array} -- D x 1 array, size of simulation region 
         radius {float} --  boids field of view distance
     
     Returns:
-        {np array} -- N x D grid coords of boids 
+        numpy array -- N x D grid coords of boids 
     """    
 
 
@@ -66,17 +65,11 @@ def make_proc_boid_ind(N_b, N_proc):
         N_b {int} -- number of boids 
         N_proc {int} -- number of processors 
     
-    Raises:
-        ValueError: The number of boids should not be more than
-        processirs 
     
     Returns:
         list -- Tuples containing the index range for each
         processor 
     """
-    
-    if N_b < N_proc:
-        raise ValueError('More processors than boids!')
     
     per_proc = N_b // N_proc
     left_over = N_b % N_proc
@@ -91,8 +84,8 @@ def grid_from_pos(one_pos, box_size, radius):
     gets grid coordinates from one boids position 
     
     Arguments:
-        one_pos {np array} -- D x 1 array, one boids position 
-        box_size {np array} -- D x 1 array, size of simulation region 
+        one_pos {numpy array} -- D x 1 array, one boids position 
+        box_size {numpy array} -- D x 1 array, size of simulation region 
         radius {float} --  boids field of view distance
     '''
 
@@ -107,14 +100,14 @@ def get_new_grid(upd_labs, grid, pos, vel, box_size, radius):
     
     Arguments:
         upd_labs {list} -- list of indexs to update grids for 
-        grid {np array} -- array of all boids grid coordinates 
-        pos [np array] -- all boids positions
-        vel [np array] -- all boids velocities
-        box_size {np array} -- D x 1 array, size of simulation region 
+        grid {numpy array} -- array of boids grid coordinates 
+        pos {numpy array} --  boids positions
+        vel {numpy array} --  boids velocities
+        box_size {numpy array} -- D x 1 array, size of simulation region 
         radius {float} --  boids field of view distance
     
     Returns:
-        [np array] -- updated grid 
+        numpy array -- updated grid 
     """    
 
     new_grid = np.copy(grid)
@@ -129,16 +122,16 @@ def get_grid_updates(upd_labs, grid, pos, vel, box_size, radius):
     to master.
     
     Arguments:
-        upd_labs {list} -- list of indexs to update grids for 
-        grid {np array} -- array of all boids grid coordinates 
-        pos [np array] -- all boids positions
-        vel [np array] -- all boids velocities
-        box_size {np array} -- D x 1 array, size of simulation region 
+        upd_labs {list} -- list of indexes to update grids for 
+        grid {numpy array} -- array of boids grid coordinates 
+        pos [numpy array] --  boids positions
+        vel [numpy array] -- boids velocities
+        box_size {numpy array} -- D x 1 array, size of simulation region 
         radius {float} --  boids field of view distance
     
     Returns:
-        [np array] -- indices of boids in new cell
-        [np array] -- array of new cells coords that boids are in 
+        tuple -- indices of boids in that have changed cell, array of new 
+        cells coords that boids are in 
     """  
 
     
@@ -149,49 +142,25 @@ def get_grid_updates(upd_labs, grid, pos, vel, box_size, radius):
 
 @numba.njit()
 def get_adj_labs(upd_lab, grid):
-    """[summary]
+    """
+    gets labels of boids that are in cells adjacent to the cell
+    that the boid with label upd_lab is in 
     
     Arguments:
         upd_lab {int} -- index to get adjacents for 
-        grid {[type]} -- array of all grid coords 
+        grid {numpy array} -- array of grid coords 
     
     Returns:
-        [list] -- list of adjacent labels 
+        list -- list of adjacent labels 
     """    
 
     my_grid = grid[upd_lab]
     adj = []
     for i in range(len(grid)):
-        if np.any(np.abs(my_grid - grid[i])) <= 0:
+        if np.any(np.abs(my_grid - grid[i]) <= 0) or np.all(np.abs(my_grid - grid[i]) <= 1):
             adj.append(i)
     
     return adj
 
-
-
-
-
-
-"""
-
-pos ,vel = initialise_boids(1000, np.array([100., 100.]), 10.)
-grid = initialise_grid(pos, vel, np.array([100., 100.]), 10.)
-
-
-
-pos[1] = np.array([11., 17.])
-
-print(get_grid_updates([0], grid, pos, vel, np.array([100., 100.]), 1.))
-
-print(get_grid_updates([1], grid, pos, vel, np.array([100., 100.]), 1.))
-print(get_adj_labs(3, grid))
-
-print(pos)
-better_update_boids([0, 2, 3, 4], grid, pos, vel, np.array([100., 100.]), 10.)
-print(pos)
-
-
-"""
-    
     
 

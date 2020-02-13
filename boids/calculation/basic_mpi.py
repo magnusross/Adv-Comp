@@ -16,12 +16,12 @@ np.random.seed(200)
 
 parser = argparse.ArgumentParser(description='Spatial grid based parrallel boids simulation, with MPI.')
 parser.add_argument("--n", default=50, type=int, help="Number of iterations")
-parser.add_argument("--nb", default=100, type=int, help="Number of boids")
+parser.add_argument("--nb", default=500, type=int, help="Number of boids")
 parser.add_argument("--d", default=2, type=int, choices=[2, 3],
                         help="Number of dimensions")
-parser.add_argument("--s", default=300., type=float, help="Box size")
-parser.add_argument("--r", default=50., type=float, help="Boids field of view")
-parser.add_argument("--f", default='results_basic.txt', help="Results out filename")
+parser.add_argument("--s", default=1000., type=float, help="Box size")
+parser.add_argument("--r", default=100., type=float, help="Boids field of view")
+parser.add_argument("--f", default='fov_basic.txt', help="Results out filename")
 args = parser.parse_args()
 
 

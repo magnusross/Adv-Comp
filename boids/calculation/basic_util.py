@@ -21,11 +21,10 @@ def initialise_boids(N_b, box_size, vel=1.):
         box_size {np array} -- size of simulation region
     
     Keyword Arguments:
-        vel {float} --  veloctiy scale for boids(default: {1})
+        vel {float} --  velocity scale for boids(default: {1})
     
     Returns:
-        pos [np array] -- inital positions
-        vel [np array] -- inital velocities
+        tuple - np arrays of initial positions and velocities 
     """    
 
     dim = len(box_size)
@@ -43,17 +42,12 @@ def make_proc_boid_ind(N_b, N_proc):
         N_b {int} -- number of boids 
         N_proc {int} -- number of processors 
     
-    Raises:
-        ValueError: The number of boids should not be more than
-        processirs 
     
     Returns:
         list -- Tuples containing the index range for each
         processor 
     """
     
-    if N_b < N_proc:
-        raise ValueError('More processors than boids!')
     
     per_proc = N_b // N_proc
     left_over = N_b % N_proc

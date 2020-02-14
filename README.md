@@ -14,6 +14,10 @@ Dependencies
 - `argparse 1.4.0`
 - `matplotlib 3.1.1`
 
+For animations:
+
+- `ffmpeg 4.2`
+
 ### BC3
 
 The following should be in `.bashrc` on BC3
@@ -49,7 +53,7 @@ are listed below. All directoiries are under `boids`
 Getting Data
 ------------
 
-To get data you can do the `mpirun` command in the `calculation` direcrory. There are a number of flags for the scripts which are documented in the scripts, the most important are:
+To get data you can do the `mpirun` command in the `calculation` directory, on the method you would like to run. The scipts that run with MPI have the `_mpi` suffix (Balanced=`bal_grid_mpi.py`, Basic=`basic_mpi.py`, Grid=`grid_mpi.py`). There are a number of flags for the scripts which are documented in the scripts, the most important are:
  
 - `--nb` Sets number of boids in the simulation
 - `--n` Sets number of iterations 
@@ -60,6 +64,18 @@ For example if you wanted to run the balanced method with 500 boids, for 100 ite
 
     mpirun -n 4 python bal_grid_mpi.py --nb 500 --n 100 --d 2 --w 1 
 
+The script will print some information about what was run and how long it took when it finishes execution. The output will look something like this:
+
+    4 50 500 2 1000.0 100.0 4.834896087646484
+
+These numbers are in order: the number of processors, the number of interations, number of boids, the dimension, the domain size the boids field of view, and the execution time. This data is also automatically written to a text file. All data in the `results` directory has this format.
+
+The Grid method is quite constrained in how many processors and what field of view you can use. Only a square number of processors + 1 can be used in 2D and a cube number + 1 in 3D, for example in 3D you could do `-n 28`. There are also constaints on the field of view for the grid method. Running the script with incompatible processor number or field of view will raise a value error.
+
+A note on the 3 methods
+-----------------------
+
+Three different algorithms are implemented here, the details of which can be found in the report. Each implementation uses slightly different data structures, which is admittedly quite confusing. In general, the Grid method is a lot more convoluted and difficult to understand than the Basic and Balanced methods, and is not very well written. It is left in here because it was developed in the course of developing the Balanced method and they share a few similar characteristics. The Balanced and Basic methods use similar data structures, with separate arrays for position and velocity and a similar system for allocation boids to workers. In general they are easier to follow and make more sense. 
 
 
 
@@ -69,8 +85,14 @@ For example if you wanted to run the balanced method with 500 boids, for 100 ite
 
 
 
-Data structue a bit different for each implementaion 
-all inner loop funtions complied with numba 
+
+
+
+
+
+
+
+
 
 scripts must be run from the folder they are in
 

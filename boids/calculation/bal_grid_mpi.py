@@ -14,14 +14,14 @@ import bal_grid_util as util
 import argparse
 np.random.seed(200)
 
-parser = argparse.ArgumentParser(description='Spatial grid based parrallel boids simulation, with MPI.')
+parser = argparse.ArgumentParser(description='Spatial grid based parallel boids simulation, with MPI.')
 parser.add_argument("--n", default=500, type=int, help="Number of iterations")
 parser.add_argument("--nb", default=500, type=int, help="Number of boids")
 parser.add_argument("--d", default=2, type=int, choices=[2, 3],
                         help="Number of dimensions")
 parser.add_argument("--s", default=500., type=float, help="Box size")
 parser.add_argument("--r", default=20., type=float, help="Boids field of view")
-parser.add_argument("--f", default='res.txt', help="Results out filename")
+parser.add_argument("--f", default='bal_results.txt', help="Results out filename")
 parser.add_argument("--w", default=False, type=bool, help="Write results to disk (bool)")
 args = parser.parse_args()
 

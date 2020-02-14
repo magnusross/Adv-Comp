@@ -20,7 +20,7 @@ parser.add_argument("--d", default=2, type=int, choices=[2, 3],
                         help="Number of dimensions")
 parser.add_argument("--s", default=300., type=float, help="Box size")
 parser.add_argument("--r", default=50., type=float, help="Boids field of view")
-parser.add_argument("--f", default='results.txt', help="Results out filename")
+parser.add_argument("--f", default='grid_results.txt', help="Results out filename")
 parser.add_argument("--w", default=False, type=bool, help="Write results to disk (bool)")
 args = parser.parse_args()
 

@@ -13,7 +13,7 @@ import grid_util as util
 import argparse
 np.random.seed(100) #
 
-parser = argparse.ArgumentParser(description='Spatial grid based parrallel boids simulation, with MPI.')
+parser = argparse.ArgumentParser(description='Spatial grid based parallel boids simulation, with MPI.')
 parser.add_argument("--n", default=500, type=int, help="Number of iterations")
 parser.add_argument("--nb", default=500, type=int, help="Number of boids")
 parser.add_argument("--d", default=2, type=int, choices=[2, 3],

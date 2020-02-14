@@ -1,7 +1,7 @@
 Advanced Computational Physics 301: Parallel Boids
 ==================================================
 
-Below are some instructions for running the code for the coursework for the unit Advanced Computational Physics 301 at the University of Bristol. All scripts mentioned below should be run from the directory they are in. Some of the terms used below are defined in the report, so it my make sense to read that first before running the code. 
+Below are some instructions for running the code for the coursework for the unit Advanced Computational Physics 301 at the University of Bristol. All scripts mentioned below should be run from the directory they are in. Some of the terms used below are defined in the report, so it may make sense to read that first before running the code. 
 
 Dependencies
 ------------

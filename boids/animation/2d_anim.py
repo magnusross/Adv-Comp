@@ -6,14 +6,17 @@ import matplotlib.animation as animation
 Writer = animation.writers['ffmpeg']
 writer = Writer(fps=30, metadata=dict(artist='Me'), bitrate=1800)
 
-data = np.load('./data_1000_500_better.npy')
+#data to animate 
+data = np.load('./../results/anim_data/2D_anim_data.npy')
 print(data.shape)
 fig = plt.figure()
-ax = fig.add_subplot(111, autoscale_on=False, 
-                    xlim=(0, 300), 
-                    ylim=(0, 300))
-ax.grid()
 
+#set domain size to correct one using xlim ylim 
+ax = fig.add_subplot(111, autoscale_on=False, 
+                    xlim=(0, 500), 
+                    ylim=(0, 500))
+ax.grid()
+plt.axis('off')
 scat = ax.scatter(data[0][0][:,0], data[0][0][:,0],
                  s=0.5)
 
@@ -23,5 +26,6 @@ def animate(i):
     return scat 
 
 ani = animation.FuncAnimation(fig, animate, range(1, len(data)),
-                              interval=0.001)
-ani.save('boids_mpi.mp4', writer=writer)
+                              interval=0.01)
+
+ani.save('boids_2D.mp4', writer=writer)

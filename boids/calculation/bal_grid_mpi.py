@@ -20,7 +20,7 @@ parser.add_argument("--nb", default=500, type=int, help="Number of boids")
 parser.add_argument("--d", default=2, type=int, choices=[2, 3],
                         help="Number of dimensions")
 parser.add_argument("--s", default=500., type=float, help="Box size")
-parser.add_argument("--r", default=100., type=float, help="Boids field of view")
+parser.add_argument("--r", default=20., type=float, help="Boids field of view")
 parser.add_argument("--f", default='res.txt', help="Results out filename")
 parser.add_argument("--w", default=False, type=bool, help="Write results to disk (bool)")
 args = parser.parse_args()
@@ -63,6 +63,7 @@ if task_id == MASTER:
 
     boids_index = util.make_proc_boid_ind(N_B, N_proc - 1)
     for i in range(N_proc-1):
+        # send processors the boids they will manage 
         comm.send(boids_index[i], i+1, tag=INDICES_TO_MANAGE)
     
     for i in range(N_IT):
@@ -91,12 +92,10 @@ if task_id == MASTER:
             
             comm.Recv([diff_labs, MPI.INT], source=j+1, tag=T_LABS)
             comm.Recv([new_grid, MPI.INT], source=j+1, tag=T_GRID)
-
+            # do cell updates 
             grid_all[diff_labs] = new_grid
 
     
-    # comm.Barrier()
-
     t2 = MPI.Wtime()
         
     f = open(FILE_NAME, 'a+')
@@ -104,12 +103,12 @@ if task_id == MASTER:
     print('%s %s %s %s %s %s %s\n'%(N_proc, N_IT, N_B, DIM, args.s, RADIUS, t2 - t1))
     f.close()
     if SAVE:
-        np.save('bal_grid_data_%s_%s.npy'%(N_B, N_IT), results)  
+        np.save('bal_grid_data_%s_%s.npy'%(N_B, N_IT) , results)
 
 
 if task_id != MASTER:
     my_inds_tup = comm.recv(tag=INDICES_TO_MANAGE)
-    my_labs = np.arange(my_inds_tup[0], my_inds_tup[1])
+    my_labs = np.arange(my_inds_tup[0], my_inds_tup[1]) 
 
     
     for i in range(N_IT):
@@ -127,7 +126,7 @@ if task_id != MASTER:
 
         my_upd_pos = pos_all[my_labs]
         my_upd_vel = vel_all[my_labs]
-
+        # calculates which boids have moved cell
         diff_labs, new_grid = util.get_grid_updates(my_labs, grid_all, pos_all, 
                                                      vel_all, BOX_SIZE, RADIUS)
 

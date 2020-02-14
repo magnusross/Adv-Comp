@@ -47,30 +47,33 @@ task_id = comm.Get_rank()
 
 if task_id == MASTER:
     t1 = MPI.Wtime()
+    # initiase data stuctures 
     pos_all, vel_all = util.initialise_boids(N_B, BOX_SIZE)
     
     results = np.zeros((N_IT, 2, N_B, DIM))     
 
     boids_index = util.make_proc_boid_ind(N_B, N_proc - 1)
     for i in range(N_proc-1):
+        # send processors the boids they will manage 
         comm.send(boids_index[i], i+1, tag=INDICES_TO_MANAGE)
     
     for i in range(N_IT):
         results[i] = pos_all, vel_all
-
         comm.Bcast([pos_all, MPI.DOUBLE], root=MASTER)
         comm.Bcast([vel_all, MPI.DOUBLE], root=MASTER)
 
         for j in range(N_proc-1):
+            # collate data from workers 
             proc_len = boids_index[j][1] - boids_index[j][0]
             mini_pos = np.empty((proc_len, DIM))
             mini_vel = np.empty((proc_len, DIM))
             
             tag_pos = int(str(i) + str(j + 1) + '0')
             tag_vel = int(str(i) + str(j + 1) + '1')
+
             comm.Recv([mini_pos, MPI.DOUBLE], tag=tag_pos)
             comm.Recv([mini_vel, MPI.DOUBLE], tag=tag_vel)
-
+            # update data structures 
             pos_all[boids_index[j][0]:boids_index[j][1]] = mini_pos
             vel_all[boids_index[j][0]:boids_index[j][1]] = mini_vel
     comm.Barrier()

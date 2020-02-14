@@ -1,6 +1,5 @@
 import numpy as np 
 import updates 
-import tqdm
 from basic_util import initialise_boids
 np.random.seed(200)
 
@@ -15,7 +14,7 @@ print(pos_all.shape)
 #update N times 
 N = 50
 results = np.zeros((N, 2, N_b, dim))                                           
-for j in tqdm.tqdm(range(N)):
+for j in range(N):
     results[j] = updates.serial_update(pos_all, vel_all, box_size)
 np.save('results_serial.npy', results)
 

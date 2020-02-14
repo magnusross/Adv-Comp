@@ -15,7 +15,7 @@ np.random.seed(200)
 
 
 
-def initialise_boids(N_b, box_size, vel=1.):
+def initialise_boids(N_b, box_size, vel=3):
     """
     initialises position and velocity
     
@@ -31,7 +31,7 @@ def initialise_boids(N_b, box_size, vel=1.):
     """  
 
     dim = len(box_size)
-    pos = np.random.rand(N_b, dim) * box_size/10 + box_size/2
+    pos = np.random.rand(N_b, dim) * box_size
     vel = (2*np.random.rand(N_b, dim) - 1) * vel
     return pos, vel
 

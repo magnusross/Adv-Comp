@@ -12,7 +12,7 @@ import numba
 from numba import prange
 
 @numba.njit()
-def rule_avoid(one_my_pos, pos_all, radius=30., factor=0.00001, max_f=0):
+def rule_avoid(one_my_pos, pos_all, radius=30., factor=0.000095):
     """
     rule that stops boids colliding 
     
@@ -41,7 +41,7 @@ def rule_avoid(one_my_pos, pos_all, radius=30., factor=0.00001, max_f=0):
 
 
 @numba.njit()
-def rule_com(one_my_pos, pos_all, radius=30., factor=0.001, max_f=0):
+def rule_com(one_my_pos, pos_all, radius=30., factor=0.00005):
     '''
     rule that guides boids to local center of mass 
     
@@ -76,7 +76,7 @@ def rule_com(one_my_pos, pos_all, radius=30., factor=0.001, max_f=0):
         return v_upd
 
 @numba.njit()
-def rule_match(one_my_pos, one_my_vel, pos_all, vel_all, radius=30., factor=0.00001, max_f=0):
+def rule_match(one_my_pos, one_my_vel, pos_all, vel_all, radius=30., factor=0.000005):
     '''
     rule that aligns local velocities 
     

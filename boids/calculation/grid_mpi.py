@@ -68,6 +68,7 @@ if task_id == MASTER:
     for i in range(N_IT): 
         N_proc_boids = []
         for j in range(1, N_proc):
+
             proc_boid = util.get_cells_boids(rank_to_coord(j), all_boids)
             comm.send(len(proc_boid), j, tag=T_SIZE)
             comm.Send([proc_boid, MPI.DOUBLE], j, tag=T_BOIDS)
@@ -81,7 +82,7 @@ if task_id == MASTER:
 
         results[i] = all_boids
         util.assign_to_cells(all_boids, N_cell_ax, BOX_SIZE)
-        # print(i)
+
     comm.Barrier()
 
     t2 = MPI.Wtime()
@@ -109,6 +110,7 @@ else:
 
         all_nn_boids = np.empty((0, 3, DIM))
         # now get neighbour boids 
+        # first send sizes 
         N_nn_boids = []
         for j in range(len(my_nns)):
             comm.send(N_my_boids, coord_to_rank(my_nns[j]), tag=T_N_SIZE)
@@ -116,7 +118,7 @@ else:
         for j in range(len(my_nns)):
             N_nn_boids_req = comm.recv(source=coord_to_rank(my_nns[j]), tag=T_N_SIZE)
             N_nn_boids.append(N_nn_boids_req)#.wait())
-        
+        # send/receive actual data 
         nn_boids = np.zeros((sum(N_nn_boids), 3, DIM)) 
         for j in range(len(my_nns)):
             comm.Isend([my_boids, MPI.DOUBLE], coord_to_rank(my_nns[j]), tag=T_N_BOIDS)

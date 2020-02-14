@@ -44,7 +44,22 @@ are listed below. All directoiries are under `boids`
 
 - `results`
 
-    Contains `.txt` files with the data used to generate all the plots for the report, most of these were generated using BC3
+    Contains `.txt` files with the data used to generate all the plots for the report, most of these were generated using BC3.
+
+Getting Data
+------------
+
+To get data you can do the `mpirun` command in the `calculation` direcrory. There are a number of flags for the scripts which are documented in the scripts, the most important are:
+ 
+- `--nb` Sets number of boids in the simulation
+- `--n` Sets number of iterations 
+- `--w` If 1 writes a `.npy` file with the boids data for the simulation to disk 
+- `--d` Sets dimension of simulation (2D or 3D)
+
+For example if you wanted to run the balanced method with 500 boids, for 100 iterations in 2D,using 4 processors and write the data to disk you would do:
+
+    mpirun -n 4 python bal_grid_mpi.py --nb 500 --n 100 --d 2 --w 1 
+
 
 
 
@@ -62,3 +77,5 @@ scripts must be run from the folder they are in
 modules on bc3 
 
 note on the structure of results 
+
+processor number for gird 

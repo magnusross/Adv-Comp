@@ -21,6 +21,7 @@ parser.add_argument("--d", default=2, type=int, choices=[2, 3],
 parser.add_argument("--s", default=300., type=float, help="Box size")
 parser.add_argument("--r", default=50., type=float, help="Boids field of view")
 parser.add_argument("--f", default='results.txt', help="Results out filename")
+parser.add_argument("--w", default=False, type=bool, help="Write results to disk (bool)")
 args = parser.parse_args()
 
 
@@ -31,13 +32,13 @@ DIM = args.d
 BOX_SIZE = np.ones(DIM, dtype=float) * args.s
 RADIUS = args.r
 FILE_NAME = args.f
-
+SAVE = args.w
 
 comm = MPI.COMM_WORLD
 N_proc = comm.Get_size()
 task_id = comm.Get_rank()
 
-SAVE = True
+
 MASTER = 0
 T_SIZE = 10
 T_BOIDS = 11
@@ -90,7 +91,7 @@ if task_id == MASTER:
     print('%s %s %s %s %s %s %s\n'%(N_proc, N_IT, N_B, DIM, args.s, RADIUS, t2 - t1))
     f.close()
     if SAVE:
-        np.save('data_%s_%s.npy'%(N_B, N_IT), results)
+        np.save('grid_data_%s_%s.npy'%(N_B, N_IT), results)
 
 
 
